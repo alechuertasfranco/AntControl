@@ -1,11 +1,11 @@
 import 'package:ant_control/config/theme.dart';
 import 'package:flutter/material.dart';
-import 'package:ant_control/pages/bank_accounts_page.dart';
 import 'package:ant_control/pages/banks_page.dart';
 import 'package:ant_control/pages/currencies_page.dart';
 import 'package:ant_control/pages/categories/expenses_page.dart';
 import 'package:ant_control/pages/categories/incomes_page.dart';
 import 'package:ant_control/pages/categories/savings_page.dart';
+import 'package:ant_control/pages/bank_accounts/main_page.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});

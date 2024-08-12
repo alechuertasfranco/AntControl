@@ -64,13 +64,13 @@ class DatabaseHelper {
     await db.execute('''
       CREATE TABLE accounts (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        bank_id INTEGER NOT NULL,
-        account_type_id INTEGER NOT NULL,
-        currency_id INTEGER NOT NULL,
         name TEXT NOT NULL,
+        bank_id INTEGER NOT NULL,
+        currency_id INTEGER NOT NULL,
+        account_type_id INTEGER NOT NULL,
         FOREIGN KEY (bank_id) REFERENCES banks(id),
-        FOREIGN KEY (account_type_id) REFERENCES account_types(id),
         FOREIGN KEY (currency_id) REFERENCES currencies(id)
+        FOREIGN KEY (account_type_id) REFERENCES account_types(id),
       );
     ''');
 
