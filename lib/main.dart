@@ -7,6 +7,7 @@ import 'package:ant_control/pages/incomes_page.dart';
 import 'package:ant_control/pages/savings_page.dart';
 import 'package:ant_control/pages/settings_page.dart';
 import 'package:ant_control/providers/period_provider.dart';
+import 'package:ant_control/config/theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,10 +27,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Ant Control',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-      ),
+      theme: appTheme, // Usa el tema definido
       home: const MyHomePage(),
     );
   }
@@ -88,9 +86,8 @@ class MyHomePageState extends State<MyHomePage> {
         ],
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
-        backgroundColor: Colors.blueGrey,
-        selectedItemColor: Colors.blueGrey.shade900,
-        unselectedItemColor: Colors.grey,
+        selectedItemColor: AppColors.primary900,
+        unselectedItemColor: AppColors.primary300,
         showUnselectedLabels: true,
       ),
     );
