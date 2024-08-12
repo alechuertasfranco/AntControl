@@ -1,39 +1,40 @@
 import 'package:flutter/material.dart';
 import 'package:ant_control/config/theme.dart';
-import 'package:ant_control/services/banks_service.dart';
-import 'package:ant_control/models/bank.dart';
+import 'package:ant_control/services/currencies_service.dart';
+import 'package:ant_control/models/currency.dart';
 
-class ConfigureBanksPage extends StatefulWidget {
-  const ConfigureBanksPage({super.key});
+class ConfigureCurrenciesPage extends StatefulWidget {
+  const ConfigureCurrenciesPage({super.key});
 
   @override
-  ConfigureBanksPageState createState() => ConfigureBanksPageState();
+  ConfigureCurrenciesPageState createState() => ConfigureCurrenciesPageState();
 }
 
-class ConfigureBanksPageState extends State<ConfigureBanksPage> {
-  List<Bank> _banks = [];
-  final BanksService _banksService = BanksService();
+class ConfigureCurrenciesPageState extends State<ConfigureCurrenciesPage> {
+  List<Currency> _currencies = [];
+  final CurrenciesService _currenciesService = CurrenciesService();
 
   @override
   void initState() {
     super.initState();
-    _loadBanks();
+    _loadCurrencies();
   }
 
-  Future<void> _loadBanks() async {
-    final banks = await _banksService.getBanks();
+  Future<void> _loadCurrencies() async {
+    final currencies = await _currenciesService.getCurrencies();
     if (mounted) {
       setState(() {
-        _banks = banks;
+        _currencies = currencies;
       });
     }
   }
 
-  Future<void> _addOrEditBank({Bank? bank}) async {
-    String? bankName = await showDialog<String>(
+  Future<void> _addOrEditCurrency({Currency? currency}) async {
+    Map<String, String>? result = await showDialog<Map<String, String>>(
       context: context,
       builder: (BuildContext context) {
-        final TextEditingController bankNameController = TextEditingController(text: bank?.name);
+        final TextEditingController nameController = TextEditingController(text: currency?.name);
+        final TextEditingController symbolController = TextEditingController(text: currency?.symbol);
         return Dialog(
           child: LayoutBuilder(
             builder: (context, constraints) {
@@ -45,16 +46,26 @@ class ConfigureBanksPageState extends State<ConfigureBanksPage> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Text(
-                      bank == null ? 'Registrar nuevo banco' : 'Editar banco',
+                      currency == null ? 'Registrar nueva divisa' : 'Editar divisa',
                       style: Theme.of(context).textTheme.headlineMedium,
                       textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 30.0),
+                    const SizedBox(height: 20.0),
                     TextField(
-                      controller: bankNameController,
+                      controller: nameController,
                       style: Theme.of(context).textTheme.bodySmall,
                       decoration: InputDecoration(
-                        labelText: 'Nombre del banco',
+                        labelText: 'Nombre de la divisa',
+                        labelStyle: Theme.of(context).textTheme.bodySmall,
+                        border: const OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 16.0),
+                    TextField(
+                      controller: symbolController,
+                      style: Theme.of(context).textTheme.bodySmall,
+                      decoration: InputDecoration(
+                        labelText: 'Símbolo de la divisa',
                         labelStyle: Theme.of(context).textTheme.bodySmall,
                         border: const OutlineInputBorder(),
                       ),
@@ -73,9 +84,10 @@ class ConfigureBanksPageState extends State<ConfigureBanksPage> {
                         TextButton(
                           child: Text('Guardar', style: Theme.of(context).textTheme.labelMedium),
                           onPressed: () {
-                            final String name = bankNameController.text.trim();
-                            if (name.isNotEmpty) {
-                              Navigator.of(context).pop(name);
+                            final String name = nameController.text.trim();
+                            final String symbol = symbolController.text.trim();
+                            if (name.isNotEmpty && symbol.isNotEmpty) {
+                              Navigator.of(context).pop({'name': name, 'symbol': symbol});
                             }
                           },
                         ),
@@ -90,28 +102,40 @@ class ConfigureBanksPageState extends State<ConfigureBanksPage> {
       },
     );
 
-    if (bankName != null && bankName.isNotEmpty) {
-      final success = bank == null ? await _banksService.addBank(bankName) : await _banksService.updateBank(bank.id, bankName);
-      if (success) {
-        _loadBanks();
-        showScaffoldMessage(Text(bank == null ? 'Banco agregado exitosamente' : 'Banco actualizado exitosamente'));
+    if (result != null) {
+      final String name = result['name']!;
+      final String symbol = result['symbol']!;
+      if (currency == null) {
+        final success = await _currenciesService.addCurrency(name, symbol);
+        if (success) {
+          _loadCurrencies();
+          showScaffoldMessage(const Text('Divisa agregada exitosamente'));
+        } else {
+          showScaffoldMessage(const Text('Error al agregar la divisa'));
+        }
       } else {
-        showScaffoldMessage(Text(bank == null ? 'Error al agregar el banco' : 'Error al actualizar el banco'));
+        final success = await _currenciesService.updateCurrency(currency.id, name, symbol);
+        if (success) {
+          _loadCurrencies();
+          showScaffoldMessage(const Text('Divisa actualizada exitosamente'));
+        } else {
+          showScaffoldMessage(const Text('Error al actualizar la divisa'));
+        }
       }
     }
   }
 
-  Future<void> _deleteBank(Bank bank) async {
+  Future<void> _deleteCurrency(Currency currency) async {
     bool confirmDelete = await showDialog<bool>(
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
               title: Text(
-                'Eliminar banco',
+                'Eliminar divisa',
                 style: Theme.of(context).textTheme.headlineMedium,
               ),
               content: Text(
-                '¿Estás seguro de que deseas eliminar este banco?\nEsta acción no se puede deshacer.',
+                '¿Estás seguro de que deseas eliminar esta divisa?\nEsta acción no se puede deshacer.',
                 style: Theme.of(context).textTheme.bodySmall,
               ),
               actions: <Widget>[
@@ -134,12 +158,12 @@ class ConfigureBanksPageState extends State<ConfigureBanksPage> {
         false;
 
     if (confirmDelete) {
-      final success = await _banksService.deleteBank(bank.id);
+      final success = await _currenciesService.deleteCurrency(currency.id);
       if (success) {
-        _loadBanks();
-        showScaffoldMessage(const Text('Banco eliminado exitosamente'));
+        _loadCurrencies();
+        showScaffoldMessage(const Text('Divisa eliminada exitosamente'));
       } else {
-        showScaffoldMessage(const Text('Error al eliminar el banco'));
+        showScaffoldMessage(const Text('Error al eliminar la divisa'));
       }
     }
   }
@@ -155,7 +179,7 @@ class ConfigureBanksPageState extends State<ConfigureBanksPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Bancos',
+          'Divisas',
           style: Theme.of(context).textTheme.titleLarge?.copyWith(color: AppColors.primary050),
         ),
         iconTheme: const IconThemeData(color: AppColors.primary050),
@@ -163,32 +187,33 @@ class ConfigureBanksPageState extends State<ConfigureBanksPage> {
       body: Column(
         children: [
           Expanded(
-            child: _banks.isNotEmpty
+            child: _currencies.isNotEmpty
                 ? ListView.builder(
                     padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
-                    itemCount: _banks.length,
+                    itemCount: _currencies.length,
                     itemBuilder: (context, index) {
-                      final bank = _banks[index];
+                      final currency = _currencies[index];
                       return ListTile(
                         leading: const Icon(
                           Icons.circle,
                           size: 10.0,
                           color: AppColors.primary,
                         ),
-                        title: Text(bank.name, style: Theme.of(context).textTheme.bodyMedium),
+                        title: Text(currency.name, style: Theme.of(context).textTheme.bodyMedium),
+                        subtitle: Text(currency.symbol, style: Theme.of(context).textTheme.bodySmall),
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             IconButton(
                               icon: const Icon(Icons.edit, color: AppColors.primary, size: 20),
                               onPressed: () {
-                                _addOrEditBank(bank: bank);
+                                _addOrEditCurrency(currency: currency);
                               },
                             ),
                             IconButton(
                               icon: const Icon(Icons.delete, color: Colors.red, size: 20),
                               onPressed: () {
-                                _deleteBank(bank);
+                                _deleteCurrency(currency);
                               },
                             ),
                           ],
@@ -196,17 +221,17 @@ class ConfigureBanksPageState extends State<ConfigureBanksPage> {
                       );
                     },
                   )
-                : const Center(child: Text('No hay bancos registrados.')),
+                : const Center(child: Text('No hay divisas registradas.')),
           ),
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: ElevatedButton.icon(
               icon: const Icon(Icons.add, color: AppColors.text),
               label: Text(
-                'Registrar un nuevo banco',
+                'Registrar una nueva divisa',
                 style: Theme.of(context).textTheme.labelMedium,
               ),
-              onPressed: _addOrEditBank,
+              onPressed: _addOrEditCurrency,
             ),
           ),
         ],

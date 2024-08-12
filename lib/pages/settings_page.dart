@@ -2,6 +2,7 @@ import 'package:ant_control/config/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:ant_control/pages/bank_accounts_page.dart';
 import 'package:ant_control/pages/banks_page.dart';
+import 'package:ant_control/pages/currencies_page.dart';
 import 'package:ant_control/pages/categories/expenses_page.dart';
 import 'package:ant_control/pages/categories/incomes_page.dart';
 import 'package:ant_control/pages/categories/savings_page.dart';
@@ -20,6 +21,18 @@ class SettingsPage extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: <Widget>[
+          // Configurar Divisas
+          ListTile(
+            leading: const Icon(Icons.monetization_on),
+            title: const Text('Divisas'),
+            titleTextStyle: Theme.of(context).textTheme.headlineMedium,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ConfigureCurrenciesPage()), // Asegúrate de tener esta página creada
+              );
+            },
+          ),
           // Configurar Bancos
           ListTile(
             leading: const Icon(Icons.account_balance),
@@ -88,6 +101,7 @@ class SettingsPage extends StatelessWidget {
               );
             },
           ),
+          const Divider(thickness: 0.1),
         ],
       ),
     );
